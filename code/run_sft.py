@@ -17,7 +17,7 @@ trainer = SFTTrainer(
     args=dict(output_dir="sft-out",
               per_device_train_batch_size=2,
               gradient_accumulation_steps=8,
-              num_train_epochs=4,
+              num_train_epochs=7,
               learning_rate=5e-5,
               lora_r=16, lora_alpha=32, lora_dropout=0.1)
 )

@@ -18,7 +18,7 @@ model = AutoModelForCausalLM.from_pretrained(BASE,
 pairs = load_dataset("json", data_files="dpo_pairs.jsonl", split="train")
 
 trainer = DPOTrainer(
-    model=model, tokenizer=tok, train_dataset=pairs, beta=0.1,
+    model=model, tokenizer=tok, train_dataset=pairs, beta=0.15,
     args=TrainingArguments(
         output_dir=NEXT,
         per_device_train_batch_size=2,
