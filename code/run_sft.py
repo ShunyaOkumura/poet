@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
 from trl import SFTTrainer
 
 BASE = "tokyotech-llm/Swallow-7b-plus-hf"
@@ -10,22 +10,29 @@ ds = load_dataset("json", data_files="sft_poems.jsonl", split="train")
 ds = ds.map(lambda x: {"text": x["text"]})
 
 model = AutoModelForCausalLM.from_pretrained(
-    BASE, load_in_4bit=True, device_map="auto")
+    BASE,
+    device_map="auto",
+    quantization_config={"load_in_4bit": True}  # 新しい記法
+)
+
+training_args = TrainingArguments(
+    output_dir="sft-out",
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=8,
+    num_train_epochs=7,
+    learning_rate=5e-5,
+    logging_steps=10,
+    save_strategy="epoch"
+)
 
 trainer = SFTTrainer(
     model=model,
-    tokenizer=tok,
     train_dataset=ds,
-    args=dict(
-        output_dir="sft-out",
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=8,
-        num_train_epochs=7,
-        learning_rate=5e-5,
-        lora_r=16,
-        lora_alpha=32,
-        lora_dropout=0.1
-    )
+    tokenizer=tok,  # 最新の `trl` では TrainingArgumentsと同階層に移動
+    args=training_args,
+    lora_r=16,
+    lora_alpha=32,
+    lora_dropout=0.1
 )
 
 trainer.train()
